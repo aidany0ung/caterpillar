@@ -11,7 +11,7 @@ def pubChemQuery(input,type):
 def parseQuery(json):
     return json['PropertyTable']['Properties'][0]
 
-df = pd.read_csv('../data/bppp.csv', sep=';', header=0)
+df = pd.read_csv('../data/bppp.csv', sep=',', header=0)
 
 if 'ExactMass' not in df.columns:
     df['ExactMass'] = -1
