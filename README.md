@@ -8,7 +8,8 @@
 - `modelType`: `"gnn"` or `"spectral"`. Specifies the data output. See the `getData()` method for more information. **Defaults to `"gnn"`**
 - `addChemFeatures`: `True` or `False`. Only applicable if the modelType is `"spectral"`. If `True`, then various chemical features such as mass are added to the return of `getData()`. **Defaults to `False`.**
 - `flatten`: `True` or False`. Only applicable if the modelType is `"gnn"`. If `True`, then `getData()` returns flattened adjacency matrices. **Defaults to `False`.**.
+- `pad`: `True` or `False`. Only applicable if the modelType is `"gnn"`. If `True`, then `getData()` returns padded adjacency matrices. **Defaults to `True`.**.
 
 `getData()`:
-If `modelType` is `"gnn"`, returns `(x_train, y_train, x_test, y_test, longest_graph)` where the `x` are lists of adjacency matrices as numpy.ndarrays (flattened or unflattened depending on `flatten` initialization parameter) and `y` are lists of the corresponding `p_np`. `longest_graph` is the largest $n$ where the $n*n$ is the size of the adjacency matrix. All the matrices are padded such that they are the same size.
+If `modelType` is `"gnn"`, returns `(x_train, y_train, x_test, y_test, longest_graph)` where the `x` are lists of adjacency matrices as numpy.ndarrays (flattened or unflattened depending on `flatten` initialization parameter) and `y` are lists of the corresponding `p_np`. `longest_graph` is the largest $n$ where the $n*n$ is the size of the adjacency matrix. Unless `pad` is `False`, the matrices are padded such that they are the same size.
 If `modelType` is `"spectral"` returns `(x_train, y_train, x_test, y_test)` where `x` are lists of vectors containing the eigenvector and eigenvalues of the Laplacian. If `addChemFeatures` is `True` then other chemical features are added. The base size of a given element in `x` is 182 without chemical features, and 196 with.

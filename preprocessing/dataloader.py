@@ -14,12 +14,13 @@ from collections import defaultdict
 import numpy as np
 
 class DataLoader():
-    def __init__(self, filename,fiftyfifty=False, modelType='gnn', addChemFeatures=False, flatten = False):
+    def __init__(self, filename,fiftyfifty=False, modelType='gnn', addChemFeatures=False, flatten = False, pad = True):
         self.filename = filename
         self.fiftyfifty = fiftyfifty
         self.modelType = modelType
         self.addChemFeatures = addChemFeatures
         self.flatten = flatten
+        self.pad = pad
         self.dataset = self.load_data()
         
 
@@ -46,7 +47,8 @@ class DataLoader():
             # Get the longest graph
             longest_graph = max([len(x) for x in self.dataset['adj'].tolist()])
             # Pad the adjacency matrices
-            self.dataset['adj'] = self.dataset['adj'].apply(lambda x: np.pad(x, ((0,longest_graph-len(x)),(0,longest_graph-len(x))), 'constant'))
+            if self.pad:
+                self.dataset['adj'] = self.dataset['adj'].apply(lambda x: np.pad(x, ((0,longest_graph-len(x)),(0,longest_graph-len(x))), 'constant'))
             # If self.flatten is true, flatten the adjacency matrices
             if self.flatten:
                 self.dataset['adj'] = self.dataset['adj'].apply(lambda x: x.flatten())
@@ -136,8 +138,3 @@ class DataLoader():
             # Reset the index
             df = df.reset_index(drop=True)
             self.dataset = df
-
-
-dl = DataLoader('data/test.csv', fiftyfifty=True, modelType='gnn', addChemFeatures=True)
-x_train, y_train, x_test, y_test, longest_graph = dl.getData()
-print(x_train[0].shape, x_train[0].shape, x_train[-1].shape)
