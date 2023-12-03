@@ -41,6 +41,24 @@ class DataLoader():
         return df
     
     def getData(self):
+        if self.modelType == 'smile':
+            self.checkfiftyfifty()
+            #print(self.dataset.shape)
+            X = np.array(self.dataset['smile'])
+            y = np.array(self.dataset['p_np'])
+            X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2)
+            X_train = X_train.reshape(-1,1)
+            X_test = X_test.reshape(-1,1)
+            print(X_train)
+            return X_train, y_train, X_test, y_test
+        if self.modelType =='baseline':
+            self.checkfiftyfifty()
+            X = np.array(self.dataset['ExactMass'])
+            y = np.array(self.dataset['p_np'])
+            X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2)
+            X_train = X_train.reshape(-1,1)
+            X_test = X_test.reshape(-1,1)
+            return X_train, y_train, X_test, y_test
         if self.modelType == 'gnn':
             self.checkfiftyfifty()
             if self.twoSTD:
@@ -75,11 +93,13 @@ class DataLoader():
             # get only the columns we want
             self.dataset = self.dataset[default]
             self.checkfiftyfifty()
+            print(self.dataset['p_np'].value_counts())
             x = []
             y = []
-            for i in range(len(self.dataset)):
+            for index in range(len(self.dataset)):
+                print(index)
                 # Calculate the laplacian matrix
-                lap = laplacian(self.dataset['adj'].iloc[i])
+                lap = laplacian(self.dataset['adj'].iloc[index])
                 # Calculate the eigenvectors
                 eigenvalues, eigenvectors = la.eigh(lap)
                 # Find max and min eigenvalues
@@ -91,63 +111,67 @@ class DataLoader():
                 # Get the eigenvectors corresponding to the max and min eigenvalues
                 max_eig_vec = eigenvectors[:,max_eig_index]
                 min_eig_vec = eigenvectors[:,min_eig_index]
-                eigs = [0] * 180
-                if len(max_eig_vec) > 90:
+                eigs = [0] * 90
+                if len(max_eig_vec) > 45:
                     continue
-                for i in range(len(max_eig_vec)):
-                    eigs[i] = int(max_eig_vec[i])
-                    print(type(max_eig_vec[i]))
-                for i in range(len(min_eig_vec)):
-                    print(min_eig_vec,'exec')
-                    eigs[i+90] = int(min_eig_vec[i])
+                #print(min_eig_vec.shape)
+                #print(max_eig_vec.shape)
+                if max_eig_vec.shape[2] > 1:
+                    for i in range(len(max_eig_vec)):
+                        eigs[i] = int(max_eig_vec[i][0][0])
+                else:
+                    for i in range(len(max_eig_vec)):
+                        eigs[i] = int(max_eig_vec[i])
+                if min_eig_vec.shape[2] > 1:
+                    for i in range(len(min_eig_vec)):
+                        eigs[i+45] = int(min_eig_vec[i][0][0])
+                else:
+                    for i in range(len(min_eig_vec)):
+                        eigs[i+45] = int(min_eig_vec[i])
                 eigs.append(max_eig)
                 eigs.append(min_eig)
                 # Append the chemical features
                 if self.addChemFeatures:
-                    eigs.append(self.dataset['num_atoms'].iloc[i])
-                    eigs.append(self.dataset['num_bonds'].iloc[i])
-                    eigs.append(self.dataset['num_carbon_atoms'].iloc[i])
-                    eigs.append(self.dataset['num_oxygen_atoms'].iloc[i])
-                    eigs.append(self.dataset['num_nitrogen_atoms'].iloc[i])
-                    eigs.append(self.dataset['num_sulfur_atoms'].iloc[i])
-                    eigs.append(self.dataset['num_fluorine_atoms'].iloc[i])
-                    eigs.append(self.dataset['num_chlorine_atoms'].iloc[i])
-                    eigs.append(self.dataset['num_bromine_atoms'].iloc[i])
-                    eigs.append(self.dataset['num_iodine_atoms'].iloc[i])
-                    eigs.append(self.dataset['num_phosphorus_atoms'].iloc[i])
-                    eigs.append(self.dataset['ExactMass'].iloc[i])
-                    eigs.append(self.dataset['HBondDonorCount'].iloc[i])
-                    eigs.append(self.dataset['HBondAcceptorCount'].iloc[i])
+                    eigs.append(self.dataset['num_atoms'].iloc[index])
+                    eigs.append(self.dataset['num_bonds'].iloc[index])
+                    eigs.append(self.dataset['num_carbon_atoms'].iloc[index])
+                    eigs.append(self.dataset['num_oxygen_atoms'].iloc[index])
+                    eigs.append(self.dataset['num_nitrogen_atoms'].iloc[index])
+                    eigs.append(self.dataset['num_sulfur_atoms'].iloc[index])
+                    eigs.append(self.dataset['num_fluorine_atoms'].iloc[index])
+                    eigs.append(self.dataset['num_chlorine_atoms'].iloc[index])
+                    eigs.append(self.dataset['num_bromine_atoms'].iloc[index])
+                    eigs.append(self.dataset['num_iodine_atoms'].iloc[index])
+                    eigs.append(self.dataset['num_phosphorus_atoms'].iloc[index])
+                    eigs.append(self.dataset['ExactMass'].iloc[index])
+                    eigs.append(self.dataset['HBondDonorCount'].iloc[index])
+                    eigs.append(self.dataset['HBondAcceptorCount'].iloc[index])
                 # Append the list to x
                 x.append(eigs)
-                y.append(self.dataset['p_np'].iloc[i])
+                print(index,self.dataset['p_np'].iloc[index])
+                y.append(self.dataset['p_np'].iloc[index])
+            print(self.dataset['p_np'].value_counts())
             x_train, x_test, y_train, y_test = train_test_split(x, y, test_size=0.2)
             self.dataset = self.load_data()
             # Plot a histogram of the length of eigenvectors using matplotlib
-        
             return x_train, y_train, x_test, y_test
             
 
     def checkfiftyfifty(self):
         if self.fiftyfifty:
             df = self.dataset
-            df = df.reset_index(drop=True)
-            # Get a list of all rows with p_np == 0
-            p_np_0 = df[df.p_np == 0].index.tolist()
-            # Get a list of all rows with p_np == 1
-            p_np_1 = df[df.p_np == 1].index.tolist()
-            # Randomly sample from p_np_1 to get a list of indices
-            p_np_1_sample = np.random.choice(p_np_1, size=len(p_np_0), replace=False)
-            #print(max(p_np_0), max(p_np_1), max(p_np_1_sample))
-            p_np_0.extend(p_np_1_sample)
-            # Filter df by the indices
-            df = df.iloc[p_np_0]
-            # Reset the index
-            df = df.reset_index(drop=True)
-            self.dataset = df
+            df_1 = df[df['p_np'] == 1]
+            df_0 = df[df['p_np'] == 0]
+            if len(df_1) > len(df_0):
+                l = len(df_0)
+            else:
+                l = len(df_1)
+            df_new = pd.concat([df_1.sample(l, replace=False), df_0.sample(l, replace=False)])
+            self.dataset = df_new
 
-#dl = DataLoader('data/test.csv', modelType='spectral')
+#dl = DataLoader('data/test.csv', modelType='smile', fiftyfifty=True)
 #x_train, y_train, x_test, y_test = dl.getData()
+#print(y_train.count(1),y_train.count(0))
 '''
 dl = DataLoader('data/test.csv', modelType='gnn', pad=False, twoSTD=False)
 x_train, y_train, x_test, y_test, longest_graph = dl.getData()
