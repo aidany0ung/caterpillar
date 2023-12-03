@@ -14,13 +14,14 @@ from collections import defaultdict
 import numpy as np
 
 class DataLoader():
-    def __init__(self, filename,fiftyfifty=False, modelType='gnn', addChemFeatures=False, flatten = False, pad = True):
+    def __init__(self, filename,fiftyfifty=False, modelType='gnn', addChemFeatures=False, flatten = False, pad = True, twoSTD = True):
         self.filename = filename
         self.fiftyfifty = fiftyfifty
         self.modelType = modelType
         self.addChemFeatures = addChemFeatures
         self.flatten = flatten
         self.pad = pad
+        self.twoSTD = twoSTD
         self.dataset = self.load_data()
         
 
@@ -42,6 +43,10 @@ class DataLoader():
     def getData(self):
         if self.modelType == 'gnn':
             self.checkfiftyfifty()
+            if self.twoSTD:
+                self.dataset['adj_len'] = self.dataset['adj'].apply(lambda x: len(x))
+                self.dataset = self.dataset[self.dataset['adj_len'] < 45.2]
+                self.dataset = self.dataset[self.dataset['adj_len'] > 2.9]
             # Convert the adjacency matrices into a list of adjacency matrices and a list of p_np values
             # Pad the adjacency matrices so that they are all the same size as the largest one
             # Get the longest graph
@@ -90,9 +95,11 @@ class DataLoader():
                 if len(max_eig_vec) > 90:
                     continue
                 for i in range(len(max_eig_vec)):
-                    eigs[i] = max_eig_vec[i]
+                    eigs[i] = int(max_eig_vec[i])
+                    print(type(max_eig_vec[i]))
                 for i in range(len(min_eig_vec)):
-                    eigs[i+90] = min_eig_vec[i]
+                    print(min_eig_vec,'exec')
+                    eigs[i+90] = int(min_eig_vec[i])
                 eigs.append(max_eig)
                 eigs.append(min_eig)
                 # Append the chemical features
@@ -138,3 +145,31 @@ class DataLoader():
             # Reset the index
             df = df.reset_index(drop=True)
             self.dataset = df
+
+#dl = DataLoader('data/test.csv', modelType='spectral')
+#x_train, y_train, x_test, y_test = dl.getData()
+'''
+dl = DataLoader('data/test.csv', modelType='gnn', pad=False, twoSTD=False)
+x_train, y_train, x_test, y_test, longest_graph = dl.getData()
+x_train.extend(x_test)
+y_train.extend(y_test)
+
+hist = []
+for i in x_train:
+    hist.append(i.shape[0])
+
+hist = np.asarray(hist)
+print(np.std(hist))
+print(np.mean(hist))
+
+ctr = 0
+cant = 0
+for i in range(len(hist)):
+    item = hist[i]
+    if item > 45:
+        ctr += 1
+        if y_train[i] == 0:
+            cant += 1
+print(ctr/len(hist))
+print(max(hist))
+'''
