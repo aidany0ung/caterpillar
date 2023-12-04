@@ -93,7 +93,6 @@
 91,compound 41,1,C1CCN(CC1)Cc1cc(OCCCO)ccc1,249.172878976,10444765.0,217.0,0.0,1.0,3.0,2.8
 92,clomethiazole,1,Cc1ncsc1CCCl,161.0065981,10783.0,89.0,0.0,0.0,2.0,2.1
 93,celiprolol,1,CCN(CC)C(=O)Nc1ccc(OCC(O)CNC(C)(C)C)c(c1)C(C)=O,379.24710654,2663.0,474.0,0.0,3.0,5.0,1.9
-94,"""""""1",1,"1-Trifluro-2-chloroethane""""""",-1,,,,,,
 95,33,1,CN1C(=O)c2c(cccc2Cl)n2cnc(c2C1)c1noc(n1)C(C)C,357.0992525,129710.0,521.0,0.0,0.0,5.0,2.4
 96,cefoxitin,1,CO[C@]1(NC(=O)Cc2sccc2)[C@H]3SCC(=C(N3C1=O)C(O)=O)COC(N)=O,427.05079224,441199.0,744.0,0.0,3.0,9.0,0.0
 97,Org34167,1,NC(CC=C)c1ccccc1c2noc3c2cccc3,264.126263138,9861160.0,333.0,0.0,1.0,3.0,3.4
