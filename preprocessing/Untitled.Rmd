@@ -1,0 +1,47 @@
+---
+title: "splitter"
+author: "Aidan Young"
+date: '2023-11-30'
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+``` {r}
+library(dplyr)
+library(tidyverse)
+```
+
+``` {r}
+df <- test %>%
+  filter(num_atoms < 45.24469) %>%
+  filter(num_atoms > 2.92025) %>%
+  select(smile, p_np)
+```
+
+``` {r}
+test %>%
+  summarize(std = sd(num_atoms), mean = mean(num_atoms))
+```
+
+``` {r}
+df_0 <- df %>%
+  filter(`p_np` == 0)
+```
+
+``` {r}
+df_1 <- df %>%
+  filter(`p_np` == 1) %>%
+  slice_sample(n=nrow(df_0))
+```
+
+``` {r}
+return_df <- rbind(df_0, df_1)
+return_df= return_df[sample(1:nrow(return_df)), ] 
+```
+
+``` {r}
+write_csv2(return_df, 'data/split.csv')
+```
